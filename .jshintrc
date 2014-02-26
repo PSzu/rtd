@@ -12,7 +12,6 @@
     "nonew": true,     // Prohibit use of constructors for side-effects.
     "plusplus": true,     // Prohibit use of `++` & `--`.
     "regexp": true,     // Prohibit `.` and `[^...]` in regular expressions.
-    "undef": true,     // Require all non-global variables be declared before they are used.
     "strict": true,     // Require `use strict` pragma in every file.
     "trailing": true,     // Prohibit trailing whitespaces.
 
@@ -41,6 +40,7 @@
     "shadow": false,    // Allows re-define variables later in code e.g. `var x=1; x=2;`.
     "sub": false,    // Tolerate all forms of subscript notation besides dot notation e.g. `dict['key']` instead of `dict.key`.
     "supernew": false,    // Tolerate `new function () { ... };` and `new Object;`.
+    "undef": false,     // Do not require all non-global variables be declared before they are used.
     "validthis": false,    // Tolerate strict violations when the code is running in strict mode and you use this in a non-constructor function.
 
     // == Environments ====================================================
@@ -67,6 +67,7 @@
     "predef": [         // Extra globals.
         "require",
         "Meteor",
+        "Template",
         "Fixture",
         "Email",
         "__meteor_bootstrap__",

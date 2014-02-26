@@ -35,8 +35,8 @@ module.exports = {
         jshint: {
             enabled: true,
             // if you want to customize jslint options for app and/or test code, you can do that here
-            appOptions: {},
-            testOptions: {}
+            appOptions: { jshintrc : '.jshintrc' },
+            testOptions: { jshintrc : '.jshintrc' }
         },
 	    coffeelint: {
 		    enabled: true,
