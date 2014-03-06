@@ -6,6 +6,13 @@
         CUSTOM_KARMA_CONFIG_FILE = PROJECT_BASE_PATH + '/test/karma.conf.js',
         DEFAULT_RTD_CONFIG_FILE = PROJECT_BASE_PATH + '/test/rtd/rtd.conf.js',
         CUSTOM_RTD_CONFIG_FILE = PROJECT_BASE_PATH + '/test/rtd.conf.js',
+        RTD_PORTS = {
+            'METEOR' : 3000,
+            'MIRROR' : 8000,
+            'SELENIUM' : 4444,
+            'KARMA_RUNNER' : 9100,
+            'KARMA_LISTENER' : 9876
+        },
         http = require('http'),
         fs = require('fs'),
         growl = require('growl'),
@@ -300,11 +307,12 @@
                 killAll: {
                     cmd: "rm -rf <%= basePath %>/build/mirror_app;" +
                         "mkdir -p <%= basePath %>/build/mirror_app;" +
-                        "kill `ps -ef|grep -i meteor   | grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" +
-                        "kill `ps -ef|grep -i mrt      | grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" +
+                        "kill `lsof -i tcp:" + RTD_PORTS['METEOR'] + " | grep LISTEN | tr -s ' ' | cut -d' ' -f2` > /dev/null 2>&1;" +
+                        "kill `lsof -i tcp:" + RTD_PORTS['MIRROR'] + " | grep LISTEN | tr -s ' ' | cut -d' ' -f2` > /dev/null 2>&1;" +
                         (rtdConf.options.killMongo ? "kill `ps -ef|grep -i mongod   | grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" : "") +
-                        "kill `ps -ef|grep -i selenium | grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" +
-                        "kill `ps -ef|grep -i karma    | grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" +
+                        "kill `lsof -i tcp:" + RTD_PORTS['SELENIUM'] + " | grep LISTEN | tr -s ' ' | cut -d' ' -f2` > /dev/null 2>&1;" +
+                        "kill `lsof -i tcp:" + RTD_PORTS['KARMA_RUNNER'] + " | grep LISTEN | tr -s ' ' | cut -d' ' -f2` > /dev/null 2>&1;" +
+                        "kill `lsof -i tcp:" + RTD_PORTS['KARMA_LISTENER'] + " | grep LISTEN | tr -s ' ' | cut -d' ' -f2` > /dev/null 2>&1;" +
                         "kill `ps -ef|grep -i phantomjs| grep -v grep| awk '{print $2}'` > /dev/null 2>&1;" +
                         "if `test -d <%= basePath %>/build/reports/coverage`; then rm -rf <%= basePath %>/build/reports/coverage; fi;",
                     fail: false,
@@ -321,11 +329,11 @@
                 },
                 startApp: {
                     cmd: 'cd <%= basePath %>/app;' +
-                        runCmd3000 + ' --port 3000' + (rtdConf.output.appOutput || debug ? ';' : ' > /dev/null 2>&1;')
+                        runCmd3000 + ' --port ' + RTD_PORTS['METEOR'] + (rtdConf.output.appOutput || debug ? ';' : ' > /dev/null 2>&1;')
                 },
                 startMirrorApp: {
                     cmd: 'cd <%= basePath %>/build/mirror_app;' +
-                        runCmd8000 + ' --port 8000' + (rtdConf.output.mirrorOutput || debug ? ';' : ' > /dev/null 2>&1;')
+                        runCmd8000 + ' --port ' + RTD_PORTS['MIRROR'] + (rtdConf.output.mirrorOutput || debug ? ';' : ' > /dev/null 2>&1;')
                 },
                 synchronizeMirrorApp: {
                     cmd: 'rsync -av --delete -q --delay-updates --force --exclude=".meteor/local" <%= basePath %>/app/ <%= basePath %>/build/mirror_app;' +
@@ -417,7 +425,7 @@
                 console.log('No coverage reports available from unit tests');
                 return;
             }
-            postJson('localhost', 8000, '/coverage/client', getLatestCoverageObject(), done);
+            postJson('localhost', RTD_PORTS['MIRROR'], '/coverage/client', getLatestCoverageObject(), done);
         });
 
         grunt.registerTask('downloadAndOrStartSelenium', 'downloadAndOrStartSelenium', function () {
@@ -444,7 +452,7 @@
 
             var getWebdriverSessions = function (callback) {
                 request.get({
-                    url: 'http://localhost:4444/wd/hub/sessions',
+                    url: 'http://localhost:' + RTD_PORTS['SELENIUM'] + ' /wd/hub/sessions',
                     headers: {
                         'Content-type': 'application/json'
                     }
@@ -455,7 +463,7 @@
 
             var deleteWebdriverSession = function (sessionId) {
                 request.del({
-                    url: 'http://localhost:4444/wd/hub/session/' + sessionId,
+                    url: 'http://localhost:' + RTD_PORTS['SELENIUM'] + '/wd/hub/session/' + sessionId,
                     headers: {
                         'Accept': 'application/json'
                     }
@@ -477,11 +485,11 @@
         });
 
         grunt.registerTask('outputPorts', 'outputPorts', function () {
-            console.log('Selenium-server on port 4444');
-            console.log('Karma listener on port 9876');
-            console.log('Karma runner on port 9100');
-            console.log('Meteor on port 3000');
-            console.log('Mirror on port 8000');
+            console.log('Selenium-server on port ' + RTD_PORTS['SELENIUM']);
+            console.log('Karma listener on port ' + RTD_PORTS['KARMA_LISTENER']);
+            console.log('Karma runner on port ' + RTD_PORTS['KARMA_RUNNER']);
+            console.log('Meteor on port ' + RTD_PORTS['METEOR']);
+            console.log('Mirror on port ' + RTD_PORTS['MIRROR']);
         });
 
         grunt.registerTask('pollServices', 'pollServices', function () {
@@ -506,10 +514,10 @@
                 readyPorts[port] = true;
             };
 
-            waitForServer(4444, setReadyFlag);
-            waitForServer(9876, setReadyFlag);
-            waitForServer(3000, setReadyFlag);
-            waitForServer(8000, setReadyFlag);
+            waitForServer(RTD_PORTS['SELENIUM'], setReadyFlag);
+            waitForServer(RTD_PORTS['KARMA_LISTENER'], setReadyFlag);
+            waitForServer(RTD_PORTS['METEOR'], setReadyFlag);
+            waitForServer(RTD_PORTS['MIRROR'], setReadyFlag);
 
             var i = setInterval(function () {
                 if (Object.keys(readyPorts).length === 4) {
