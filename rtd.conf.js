@@ -57,11 +57,17 @@ module.exports = {
             chromeDriverVersion: '2.9',
             chromeDriverSha: '16553f51a165dd202e842b99675ca6e5e1eb2a69'
         },
-        linux: {
+        linux_x64: {
             chromeDriverName: 'chromedriver',
             chromeDriverOs: 'linux64',
             chromeDriverVersion: '2.9',
             chromeDriverSha: '6d8498437795482bb82739e13dfc13e4bcfdd40b'
+        },
+        linux_ia32: {
+            chromeDriverName: 'chromedriver',
+            chromeDriverOs: 'linux32',
+            chromeDriverVersion: '2.9',
+            chromeDriverSha: 'ee63acfd65eac83f7f42604ad48b0107ff8a5c25'
         },
         seleniumServeVersion: '2.39.0',
         seleniumServeSha: 'f2391600481dd285002d04b66916fc4286ff70ce'

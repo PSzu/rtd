@@ -245,13 +245,15 @@
             };
         }
 
+        var seleniumDriver = process.platform === 'darwin' ? 'darwin' : process.platform + '_' + process.arch;
+
         grunt.initConfig({
             basePath: PROJECT_BASE_PATH,
             karmaConfigFile: fs.existsSync(CUSTOM_KARMA_CONFIG_FILE) ? CUSTOM_KARMA_CONFIG_FILE : DEFAULT_KARMA_CONFIG_FILE,
             coverageThresholds: JSON.stringify(rtdConf.options.coverage.thresholds),
-            chromeDriverName: rtdConf.selenium[process.platform].chromeDriverName,
-            chromeDriverOs: rtdConf.selenium[process.platform].chromeDriverOs,
-            chromeDriverVersion: rtdConf.selenium[process.platform].chromeDriverVersion,
+            chromeDriverName: rtdConf.selenium[seleniumDriver].chromeDriverName,
+            chromeDriverOs: rtdConf.selenium[seleniumDriver].chromeDriverOs,
+            chromeDriverVersion: rtdConf.selenium[seleniumDriver].chromeDriverVersion,
             istanbulExclude: rtdConf.options.coverage.exclude ? '-x ' + rtdConf.options.coverage.exclude : '',
             debugMode: debug,
             watch: {
